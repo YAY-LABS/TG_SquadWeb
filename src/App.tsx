@@ -1,41 +1,80 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import twaLogo from './assets/tapps.png'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import WebApp from '@twa-dev/sdk';
+import { AppRoot, Spinner } from '@telegram-apps/telegram-ui';
+import Home from './pages/Home';
+import { CreateSquad, SquadDetail, SquadList } from './pages/squad';
+import useUserStore from './store/userUserStore';
+import fetchAPI from './lib/utils/fetchApi';
+import './App.css';
+import '@telegram-apps/telegram-ui/dist/styles.css';
 
-import WebApp from '@twa-dev/sdk'
+function AppContent() {
+  const navigate = useNavigate();
+  const { setUser } = useUserStore();
 
-function App() {
-  const [count, setCount] = useState(0)
+  const createUser = async (userId: string) => {
+    console.log('createing user');
+    try {
+      const user = await fetchAPI('POST', '/user', { userId });
+      setUser(user);
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  const getUser = async (userId: string) => {
+    try {
+      const user = await fetchAPI('GET', `/user/${userId}`);
+      setUser(user);
+      return user;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  const fetchUser = async (userId: string) => {
+    try {
+      const user = await getUser(userId);
+      if (!user) createUser(userId);
+      console.log(user);
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    WebApp.expand();
+    WebApp.BackButton.show();
+    WebApp.BackButton.onClick(() => {
+      navigate(-1);
+    });
+    const userId = WebApp.initDataUnsafe.user?.id;
+    // const userId = 7159954324;
+    if (!userId) return;
+    fetchUser(`${userId}`);
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://ton.org/dev" target="_blank">
-          <img src={twaLogo} className="logo" alt="TWA logo" />
-        </a>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>TWA + Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-      {/*  */}
-      <div className="card">
-        <button onClick={() => WebApp.showAlert(`Hello World! Current count is ${count}`)}>
-            Show Alert
-        </button>
-      </div>
-    </>
-  )
+    <div className='App'>
+      <AppRoot>
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/squad/create' element={<CreateSquad />} />
+          <Route path='/squad/:id' element={<SquadDetail />} />
+          <Route path='/squads' element={<SquadList />} />
+        </Routes>
+      </AppRoot>
+    </div>
+  );
 }
 
-export default App
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  );
+}
+
+export default App;
