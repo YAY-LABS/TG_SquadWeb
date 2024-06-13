@@ -1,7 +1,7 @@
-import { Suspense, useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import WebApp from '@twa-dev/sdk';
-import { AppRoot, Spinner } from '@telegram-apps/telegram-ui';
+import { AppRoot } from '@telegram-apps/telegram-ui';
 import Home from './pages/Home';
 import { CreateSquad, SquadDetail, SquadList } from './pages/squad';
 import useUserStore from './store/userUserStore';

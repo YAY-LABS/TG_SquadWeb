@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import WebApp from '@twa-dev/sdk';
 import { Button, Input } from '@telegram-apps/telegram-ui';
 import useUserStore from '../../store/userUserStore';
 import fetchAPI from '../../lib/utils/fetchApi';
